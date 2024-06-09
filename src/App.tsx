@@ -94,7 +94,7 @@ function App() {
             }px`,
           }}
         >
-          <img src="images/red.png" />
+          <img src="/images/red.png" />
         </div>
         <div
           class="absolute"
