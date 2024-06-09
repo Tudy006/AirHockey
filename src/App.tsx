@@ -94,7 +94,7 @@ function App() {
             }px`,
           }}
         >
-          <img src="public/images/red.png" />
+          <img src="images/red.png" />
         </div>
         <div
           class="absolute"
@@ -110,7 +110,7 @@ function App() {
             }px`,
           }}
         >
-          <img src="public/images/blue.png" />
+          <img src="images/blue.png" />
         </div>
         <div
           class="absolute"
@@ -124,10 +124,10 @@ function App() {
             }px`,
           }}
         >
-          <img src="public/images/puck.png" />
+          <img src="images/puck.png" />
         </div>
         <div class="top-0">
-          <img src="public/images/white_table_complete.png" />
+          <img src="images/white_table_complete.png" />
         </div>
       </div>
     </div>
