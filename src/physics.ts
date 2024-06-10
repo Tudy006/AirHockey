@@ -86,7 +86,7 @@ export function handleCircleColision(circle1: Circle, circle2: Circle): Circle {
   circle2 = {
     center: addVec(
       subVec(circle2.center, mulVec(b, dt)),
-      mulVec(newVelo, dt * 1)
+      mulVec(newVelo, dt * 0.1)
     ),
     velo: newVelo,
     rad: circle2.rad,

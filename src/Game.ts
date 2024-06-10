@@ -1,9 +1,13 @@
 import { createSignal } from "solid-js";
 import * as collider2D from "./physics";
 
+export type Racket = {
+  id: string;
+  racket: collider2D.Circle;
+};
 export type GameData = {
   puckData: collider2D.Circle;
-  racketsData: collider2D.Circle[];
+  racketsData: Racket[];
 };
 export const TABLE_WIDTH = 1,
   TABLE_LENGTH = 1.67172813,
@@ -40,40 +44,7 @@ export const [puck, setPuck] = createSignal<collider2D.Circle>({
   velo: { x: -0.0005, y: -0.001 },
   rad: PUCK_RADIUS,
 });
-export const [rackets, setRackets] = createSignal<collider2D.Circle[]>([
-  {
-    center: {
-      x: TABLE_LENGTH * 0.1,
-      y: TABLE_WIDTH / 2,
-    },
-    velo: { x: 0, y: 0 },
-    rad: RACKET_RADIUS,
-  },
-  {
-    center: {
-      x: TABLE_LENGTH * 0.8,
-      y: TABLE_WIDTH / 2,
-    },
-    velo: { x: 0, y: 0 },
-    rad: RACKET_RADIUS,
-  },
-]);
-function putInsideTable(c: collider2D.Circle): collider2D.Circle {
-  return {
-    center: {
-      x: Math.max(
-        c.rad + BORDER_SIZE,
-        Math.min(c.center.x, TABLE_LENGTH - (c.rad + BORDER_SIZE))
-      ),
-      y: Math.max(
-        c.rad + BORDER_SIZE,
-        Math.min(c.center.y, TABLE_WIDTH - (c.rad + BORDER_SIZE))
-      ),
-    },
-    velo: c.velo,
-    rad: c.rad,
-  };
-}
+export const [rackets, setRackets] = createSignal<Racket[]>([]);
 export function MovePuck() {
   setPuck({
     center: collider2D.addVec(puck().center, puck().velo),
@@ -99,7 +70,7 @@ export function handlePuckCollisions() {
     );
   }
   for (let i = 0; i < rackets().length; i++) {
-    newPuck = collider2D.handleCircleColision(rackets()[i], newPuck);
+    newPuck = collider2D.handleCircleColision(rackets()[i].racket, newPuck);
   }
   if (collider2D.absVec(newPuck.velo) >= MAX_SPEED) {
     newPuck.velo = collider2D.mulVec(
@@ -113,7 +84,7 @@ export function handlePuckCollisions() {
 export function updateRacket(
   newX: number,
   newY: number,
-  idPlayerRacket: number
+  idPlayerRacket: string
 ) {
   var newRackets = rackets();
   const newCenter: collider2D.Vector = {
@@ -126,13 +97,23 @@ export function updateRacket(
       Math.min(newY, TABLE_WIDTH - (RACKET_RADIUS + BORDER_SIZE))
     ),
   };
-  newRackets[idPlayerRacket] = {
-    center: newCenter,
-    velo: collider2D.mulVec(
-      collider2D.subVec(newCenter, newRackets[idPlayerRacket].center),
-      1
-    ),
-    rad: RACKET_RADIUS,
-  };
-  setRackets(newRackets);
+  for (let i = 0; i < newRackets.length; i++) {
+    if (newRackets[i].id == idPlayerRacket) {
+      console.log(rackets().length);
+      // console.log("CHANGED", newRackets[i].racket.center.x);
+      newRackets[i] = {
+        id: idPlayerRacket,
+        racket: {
+          center: newCenter,
+          velo: collider2D.mulVec(
+            collider2D.subVec(newCenter, newRackets[i].racket.center),
+            1
+          ),
+          rad: RACKET_RADIUS,
+        },
+      };
+      // console.log("HAS CHANGED?", newRackets[i].racket.center.x);
+    }
+  }
+  setRackets([...newRackets]);
 }
