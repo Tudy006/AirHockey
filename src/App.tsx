@@ -23,9 +23,10 @@ function App() {
     ]);
     const peer = new Peer(HOST_PEER_ID);
     peer.on("open", () => {
-      console.log("HERE");
       myGame.setStarted(true);
+      console.log("started game:", myGame.started());
       peer.on("connection", (conn) => {
+        console.log("NEW CONNECTION");
         peerConns.push(conn);
         conn.on("open", () => {
           conn.send({ puckData: myGame.puck(), racketData: myGame.rackets() });
@@ -47,8 +48,6 @@ function App() {
             prevRackets.push(newRacket);
           }
           myGame.setRackets(prevRackets);
-
-          console.log("THE NEW LENGTH IS: ", myGame.rackets().length);
           conn.send({
             puckData: myGame.puck(),
             racketsData: myGame.rackets(),
@@ -178,7 +177,8 @@ function App() {
       </div>
     );
   }
-  return displayTable();
+  // const game = () => ();
+  return <div>{myGame.started() ? displayTable() : <div></div>}</div>;
 }
 
 export default App;
