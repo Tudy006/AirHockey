@@ -2,6 +2,7 @@ import Peer, { DataConnection } from "peerjs";
 import { For, createSignal } from "solid-js";
 import * as myGame from "./Game";
 import { handleCircleColision } from "./physics";
+import { peerConfig } from "./config";
 
 const HOST_PEER_ID = "dbd71e16-01c9-43f1-a75b-e916ddc60e10";
 
@@ -21,7 +22,7 @@ function App() {
         },
       },
     ]);
-    const peer = new Peer(HOST_PEER_ID);
+    const peer = new Peer(HOST_PEER_ID, peerConfig);
     peer.on("open", () => {
       myGame.setStarted(true);
       console.log("started game:", myGame.started());
@@ -56,7 +57,7 @@ function App() {
       });
     });
   } else {
-    const peer = new Peer();
+    const peer = new Peer(peerConfig);
     peer.on("open", (id) => {
       peerConns.push(peer.connect(HOST_PEER_ID));
       peerConns[0].on("open", () => {
