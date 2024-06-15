@@ -1,185 +1,299 @@
 import Peer, { DataConnection } from "peerjs";
-import { For, createSignal } from "solid-js";
-import * as myGame from "./Game";
-import { handleCircleColision } from "./physics";
+import { For, createEffect, createSignal } from "solid-js";
+import {
+  Vector,
+  addVec,
+  handleCircleColision,
+  subVec,
+  Circle,
+  absVec,
+  mulVec,
+  handleCircleSegmCollision,
+} from "./physics";
 import { peerConfig } from "./config";
+import TextInput from "./TextInput";
+import StartPage from "./test";
 
-const HOST_PEER_ID = "dbd71e16-01c9-43f1-a75b-e916ddc60e10";
+type DataType = "puck" | "racket";
+
+interface BaseData {
+  type: DataType;
+}
+interface PuckData extends BaseData {
+  type: "puck";
+  puck: Circle;
+}
+interface RacketData extends BaseData {
+  type: "racket";
+  racket: Racket;
+}
+
+interface Racket {
+  id: string;
+  racket: Circle;
+}
+type GameData = PuckData | RacketData;
+
+const MAX_PUCK_SPEED = 0.04;
+
+const TABLE_DIMENSIONS = {
+  WIDTH: 1,
+  LENGTH: 1.67172813,
+  BORDER_SIZE: 0.05339913232,
+  GOAL_SIZE: 0.447646738,
+  PUCK_RADIUS: 0.03,
+  RACKET_RADIUS: 0.06,
+  MAX_SPEED: 0.04,
+  GOAL_HEIGHT: 0.276176631,
+};
+const Table: Vector[] = [
+  { x: TABLE_DIMENSIONS.BORDER_SIZE, y: TABLE_DIMENSIONS.BORDER_SIZE },
+  { x: TABLE_DIMENSIONS.BORDER_SIZE, y: TABLE_DIMENSIONS.GOAL_HEIGHT },
+  {
+    x: TABLE_DIMENSIONS.BORDER_SIZE - TABLE_DIMENSIONS.PUCK_RADIUS,
+    y: TABLE_DIMENSIONS.GOAL_HEIGHT,
+  },
+  {
+    x: TABLE_DIMENSIONS.BORDER_SIZE - TABLE_DIMENSIONS.PUCK_RADIUS,
+    y: TABLE_DIMENSIONS.GOAL_HEIGHT + TABLE_DIMENSIONS.GOAL_SIZE,
+  },
+  {
+    x: TABLE_DIMENSIONS.BORDER_SIZE,
+    y: TABLE_DIMENSIONS.GOAL_HEIGHT + TABLE_DIMENSIONS.GOAL_SIZE,
+  },
+  {
+    x: TABLE_DIMENSIONS.BORDER_SIZE,
+    y: TABLE_DIMENSIONS.WIDTH - TABLE_DIMENSIONS.BORDER_SIZE,
+  },
+  {
+    x: TABLE_DIMENSIONS.LENGTH - TABLE_DIMENSIONS.BORDER_SIZE,
+    y: TABLE_DIMENSIONS.WIDTH - TABLE_DIMENSIONS.BORDER_SIZE,
+  },
+  {
+    x: TABLE_DIMENSIONS.LENGTH - TABLE_DIMENSIONS.BORDER_SIZE,
+    y: TABLE_DIMENSIONS.WIDTH - TABLE_DIMENSIONS.GOAL_HEIGHT,
+  },
+  {
+    x:
+      TABLE_DIMENSIONS.LENGTH -
+      TABLE_DIMENSIONS.BORDER_SIZE +
+      TABLE_DIMENSIONS.PUCK_RADIUS,
+    y: TABLE_DIMENSIONS.WIDTH - TABLE_DIMENSIONS.GOAL_HEIGHT,
+  },
+  {
+    x:
+      TABLE_DIMENSIONS.LENGTH -
+      TABLE_DIMENSIONS.BORDER_SIZE +
+      TABLE_DIMENSIONS.PUCK_RADIUS,
+    y: TABLE_DIMENSIONS.GOAL_HEIGHT,
+  },
+  {
+    x: TABLE_DIMENSIONS.LENGTH - TABLE_DIMENSIONS.BORDER_SIZE,
+    y: TABLE_DIMENSIONS.GOAL_HEIGHT,
+  },
+  {
+    x: TABLE_DIMENSIONS.LENGTH - TABLE_DIMENSIONS.BORDER_SIZE,
+    y: TABLE_DIMENSIONS.BORDER_SIZE,
+  },
+];
+
+const defaultRacket = {
+  id: "-1",
+  racket: {
+    center: { x: 0.5, y: 0.5 },
+    velo: { x: 0, y: 0 },
+    rad: TABLE_DIMENSIONS.RACKET_RADIUS,
+  },
+};
+const defaultPuck: Circle = {
+  center: { x: TABLE_DIMENSIONS.WIDTH / 2, y: TABLE_DIMENSIONS.LENGTH / 2 },
+  velo: { x: 0.001, y: 0.001 },
+  rad: TABLE_DIMENSIONS.PUCK_RADIUS,
+};
 
 function App() {
-  var idPlayerRacket: string = "0";
-  var peerConns: DataConnection[] = [];
-  const userType = window.location.hash.slice(1);
-  if (userType == "host") {
-    idPlayerRacket = "0";
-    myGame.setRackets([
-      {
-        id: idPlayerRacket,
-        racket: {
-          center: { x: 0.1, y: 0.1 },
-          velo: { x: 0, y: 0 },
-          rad: myGame.RACKET_RADIUS,
-        },
-      },
-    ]);
-    const peer = new Peer(HOST_PEER_ID, peerConfig);
-    peer.on("open", () => {
-      myGame.setStarted(true);
-      console.log("started game:", myGame.started());
-      peer.on("connection", (conn) => {
-        console.log("NEW CONNECTION");
-        peerConns.push(conn);
-        conn.on("open", () => {
-          conn.send({ puckData: myGame.puck(), racketData: myGame.rackets() });
-        });
-        conn.on("close", () => {
-          console.log(conn.connectionId);
-        });
-        conn.on("data", (data) => {
-          const newRacket: myGame.Racket = data as myGame.Racket,
-            prevRackets = [...myGame.rackets()];
-          var exist = false;
-          for (let i = 0; i < prevRackets.length; i++) {
-            if (prevRackets[i].id == newRacket.id) {
-              exist = true;
-              prevRackets[i] = newRacket;
-            }
-          }
-          if (!exist) {
-            prevRackets.push(newRacket);
-          }
-          myGame.setRackets(prevRackets);
-          conn.send({
-            puckData: myGame.puck(),
-            racketsData: myGame.rackets(),
-          });
-        });
-      });
-    });
-  } else {
-    const peer = new Peer(peerConfig);
-    peer.on("open", (id) => {
-      peerConns.push(peer.connect(HOST_PEER_ID));
-      peerConns[0].on("open", () => {
-        idPlayerRacket = id;
-        peerConns[0].send({
-          id: idPlayerRacket,
-          racket: {
-            center: { x: 0.1, y: 0.1 },
-            velo: { x: 0, y: 0 },
-            rad: myGame.RACKET_RADIUS,
-          },
-        });
-        myGame.setStarted(true);
-        peerConns[0].on("data", (data) => {
-          myGame.setPuck((data as myGame.GameData).puckData);
-          myGame.setRackets((data as myGame.GameData).racketsData);
-        });
-      });
-    });
-  }
+  const [pointerPosition, setPointerPosition] = createSignal<Vector>({
+    x: 0,
+    y: 0,
+  });
+
+  const [playerType, setPlayerType] = createSignal<string | null>(null);
+  const [playerId, setPlayerId] = createSignal<string | null>(null);
+  const [peer, setPeer] = createSignal<Peer | null>(null);
+  const [conn, setConn] = createSignal<DataConnection | null>(null);
   const [tableWidthPx, setTableWidthPx] = createSignal(
-    Math.min(window.innerWidth, 1024) / myGame.TABLE_LENGTH
+    Math.min(window.innerWidth, 1024) / TABLE_DIMENSIONS.LENGTH
   );
+  const [myRacket, setMyRacket] = createSignal(defaultRacket);
+  const [oppRacket, setOppRacket] = createSignal(defaultRacket);
+  const [puck, setPuck] = createSignal<Circle>(defaultPuck);
+
+  createEffect(() => {
+    const handleResize = () => {
+      setTableWidthPx(
+        Math.min(window.innerWidth, 1024) / TABLE_DIMENSIONS.LENGTH
+      );
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  });
+  const handlePointerMove = (event: PointerEvent) => {
+    const newX = event.clientX / tableWidthPx(),
+      newY = event.clientY / tableWidthPx();
+    const newPointerPos = {
+      x: Math.max(
+        TABLE_DIMENSIONS.RACKET_RADIUS + TABLE_DIMENSIONS.BORDER_SIZE,
+        Math.min(
+          newX,
+          TABLE_DIMENSIONS.LENGTH -
+            (TABLE_DIMENSIONS.RACKET_RADIUS + TABLE_DIMENSIONS.BORDER_SIZE)
+        )
+      ),
+      y: Math.max(
+        TABLE_DIMENSIONS.RACKET_RADIUS + TABLE_DIMENSIONS.BORDER_SIZE,
+        Math.min(
+          newY,
+          TABLE_DIMENSIONS.WIDTH -
+            (TABLE_DIMENSIONS.RACKET_RADIUS + TABLE_DIMENSIONS.BORDER_SIZE)
+        )
+      ),
+    };
+    const newRacketVelo = addVec(
+      myRacket().racket.velo,
+      subVec(newPointerPos, myRacket().racket.center)
+    );
+    setMyRacket({
+      ...myRacket(),
+      racket: {
+        ...myRacket().racket,
+        center: newPointerPos,
+        velo: newRacketVelo,
+      },
+    });
+    setPointerPosition(newPointerPos);
+  };
 
   setInterval(() => {
-    myGame.MovePuck();
-    myGame.handlePuckCollisions();
-    if (idPlayerRacket == "0") {
-      for (let i = 0; i < peerConns.length; i++)
-        peerConns[i].send({
-          puckData: myGame.puck(),
-          racketsData: myGame.rackets(),
-        });
-    } else {
-      for (let i = 0; i < myGame.rackets().length; i++) {
-        if (myGame.rackets()[i].id == idPlayerRacket)
-          peerConns[0].send(myGame.rackets()[i]);
+    const curConn = conn();
+    var newPuck = { ...puck(), center: addVec(puck().center, puck().velo) };
+    for (let i = 0; i < Table.length; i++) {
+      newPuck = handleCircleSegmCollision(
+        newPuck,
+        Table[i],
+        Table[(i + 1) % 12]
+      );
+    }
+    if (absVec(newPuck.velo) >= MAX_PUCK_SPEED) {
+      newPuck.velo = mulVec(
+        newPuck.velo,
+        MAX_PUCK_SPEED / absVec(newPuck.velo)
+      );
+    }
+    if (playerType() == "Host") {
+      newPuck = handleCircleColision(myRacket().racket, newPuck);
+      if (curConn) {
+        newPuck = handleCircleColision(oppRacket().racket, newPuck);
+        curConn.send({ type: "puck", puck: newPuck });
       }
     }
+    if (curConn) {
+      curConn.send({ type: "racket", racket: myRacket() });
+    }
+    setMyRacket({
+      ...myRacket(),
+      racket: { ...myRacket().racket, velo: { x: 0, y: 0 } },
+    });
+    setPuck({ ...newPuck });
   }, 17);
-
-  function handlePointerMove(event: PointerEvent) {
-    if (event.view) {
-      setTableWidthPx(
-        Math.min(event.view.innerWidth, 1024) / myGame.TABLE_LENGTH
-      );
-      myGame.updateRacket(
-        event.clientX / tableWidthPx(),
-        event.clientY / tableWidthPx(),
-        idPlayerRacket
-      );
-      if (idPlayerRacket == "0") {
-        for (let i = 0; i < myGame.rackets().length; i++) {
-          if (myGame.rackets()[i].id == idPlayerRacket) {
-            myGame.setPuck(
-              handleCircleColision(myGame.rackets()[i].racket, myGame.puck())
-            );
-          }
-        }
-        for (let i = 0; i < peerConns.length; i++)
-          peerConns[i].send({
-            puckData: myGame.puck(),
-            racketsData: myGame.rackets(),
-          });
-      } else {
-        for (let i = 0; i < myGame.rackets().length; i++) {
-          if (myGame.rackets()[i].id == idPlayerRacket)
-            peerConns[0].send(myGame.rackets()[i]);
-        }
-      }
-    }
-  }
-
+  const displayCircle = (circle: Circle, imgUrl: string) => {
+    return (
+      <div
+        class="absolute"
+        style={{
+          width: `${2 * circle.rad * tableWidthPx()}px`,
+          left: `${(circle.center.x - circle.rad) * tableWidthPx()}px`,
+          top: `${(circle.center.y - circle.rad) * tableWidthPx()}px`,
+        }}
+      >
+        <img src={imgUrl} />
+      </div>
+    );
+  };
   function displayTable() {
     return (
       <div
-        class="top-0 max-w-5xl h-screen flex touch-none"
+        class="w-full h-screen flex touch-none"
         onPointerMove={handlePointerMove}
         onPointerDown={handlePointerMove}
       >
         <div class="h-auto max-w-5xl">
-          <For each={myGame.rackets()}>
-            {(r, i) => (
-              <div
-                class="absolute"
-                style={{
-                  width: `${2 * r.racket.rad * tableWidthPx()}px`,
-                  left: `${
-                    (r.racket.center.x - r.racket.rad) * tableWidthPx()
-                  }px`,
-                  top: `${
-                    (r.racket.center.y - r.racket.rad) * tableWidthPx()
-                  }px`,
-                }}
-              >
-                <img src="images/red.png" />
-              </div>
-            )}
-          </For>
-          <div
-            class="absolute"
-            style={{
-              width: `${2 * myGame.PUCK_RADIUS * tableWidthPx()}px`,
-              left: `${
-                (myGame.puck().center.x - myGame.PUCK_RADIUS) * tableWidthPx()
-              }px`,
-              top: `${
-                (myGame.puck().center.y - myGame.PUCK_RADIUS) * tableWidthPx()
-              }px`,
-            }}
-          >
-            <img src="images/puck.png" />
-          </div>
-          <div class="top-0">
+          {myRacket().id != "-1" &&
+            displayCircle(myRacket().racket, "images/red.png")}
+          {oppRacket().id != "-1" &&
+            displayCircle(oppRacket().racket, "images/red.png")}
+          {displayCircle(puck(), "images/puck.png")}
+          <div>
             <img src="images/white_table_complete.png" />
           </div>
         </div>
       </div>
     );
   }
-  // const game = () => ();
-  return <div>{myGame.started() ? displayTable() : <div></div>}</div>;
-}
 
+  const handleData = (data: GameData) => {
+    switch (data.type) {
+      case "puck":
+        setPuck(data.puck);
+        break;
+      case "racket":
+        setOppRacket(data.racket);
+        break;
+      default:
+        console.log("Unkown data type: ", data);
+    }
+  };
+  createEffect(() => {
+    const curConn = conn();
+    if (curConn) {
+      curConn.on("open", () => {
+        curConn.on("close", () => {
+          console.log("WTF");
+        });
+        curConn.on("data", (data: any) => {
+          handleData(data as GameData);
+        });
+      });
+    }
+  });
+
+  const handlePlayerIdChange = (newId: string) => {
+    setPlayerId(newId);
+    setMyRacket((prevRacket) => ({ ...prevRacket, id: newId }));
+  };
+  const startPageProps = (userType: string, buttonText: string) => ({
+    onPeerChange: setPeer,
+    onConnChange: setConn,
+    onPlayerIdChange: handlePlayerIdChange,
+    onPlayerTypeChange: setPlayerType,
+    userType: userType,
+    buttonText: buttonText,
+  });
+  return (
+    <div>
+      {peer() ? (
+        displayTable()
+      ) : (
+        <div class="flex flex-row w-full justify-center align-middle bg-gray-100">
+          <StartPage {...startPageProps("Host", "Create Room")} />
+          <StartPage {...startPageProps("Guest", "Join Room")} />
+        </div>
+      )}
+    </div>
+  );
+}
+//<StartPage {...startPageProps("Guest", "Create Room")} />
 export default App;
