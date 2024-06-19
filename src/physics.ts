@@ -61,7 +61,13 @@ export function distanceToSegment(o: Vector, p: Vector, q: Vector): number {
     return Math.min(distance(o, p), distance(o, q));
   }
 }
-export function handleCircleColision(circle1: Circle, circle2: Circle): Circle {
+export function isColliding(circle1: Circle, circle2: Circle): boolean {
+  return distance(circle1.center, circle2.center) <= circle1.rad + circle2.rad;
+}
+export function handleCircleCollision(
+  circle1: Circle,
+  circle2: Circle
+): Circle {
   /// circle1 is not affected by collision
   const d = distance(circle1.center, circle2.center);
   if (d > circle1.rad + circle2.rad) return circle2; /// if circles dont intersect
