@@ -12,8 +12,9 @@ import {
   isColliding,
   distanceToSegment,
 } from "./physics";
-import StartPage from "./test";
+import StartPage from "./StartPage";
 import TextInput from "./TextInput";
+import Collider2d from "collider2d/build/collider2d";
 
 type DataType = "puck" | "players" | "teamChange" | "scored" | "gameSettings";
 
@@ -140,7 +141,7 @@ function App() {
   const [conns, setConns] = createSignal<DataConnection[]>([]);
   const [lastTouch, setLastTouch] = createSignal<string[]>(["", ""]);
   const [tableWidthPx, setTableWidthPx] = createSignal(
-    Math.min(window.innerWidth, 1024) / TABLE_DIMENSIONS.LENGTH
+    Math.min(window.innerWidth, 800) / TABLE_DIMENSIONS.LENGTH
   );
   const [myPlayer, setMyPlayer] = createSignal<Player>(defaultPlayer);
   const [oppPlayers, setOppPlayers] = createSignal<Player[]>([]);
@@ -149,7 +150,7 @@ function App() {
   createEffect(() => {
     const handleResize = () => {
       setTableWidthPx(
-        Math.min(window.innerWidth, 1024) / TABLE_DIMENSIONS.LENGTH
+        Math.min(window.innerWidth, 800) / TABLE_DIMENSIONS.LENGTH
       );
     };
 
@@ -159,6 +160,20 @@ function App() {
       window.removeEventListener("resize", handleResize);
     };
   });
+  const inInterval = (a: number, b: number, c: number) => {
+    return Math.min(a, b) <= c && c <= Math.max(a, b);
+  };
+  const onTable = (puck: Circle) => {
+    var cntRays = 0;
+    for (let i = 0; i < Table.length; i += 2) {
+      if (
+        inInterval(Table[i].y, Table[i + 1].y, puck.center.y) &&
+        Table[i].x <= puck.center.x
+      )
+        cntRays++;
+    }
+    return cntRays % 2;
+  };
   const handlePointerMove = (event: PointerEvent) => {
     const table = document.getElementById("table"),
       rect = table?.getBoundingClientRect();
@@ -291,6 +306,23 @@ function App() {
             gameSettings().maxPuckSpeed / absVec(newPuck.velo)
           );
         }
+        const placeInInterval = (a: number, b: number, c: number) => {
+          if (a <= c && c <= b) return c;
+          if (c < a) return a;
+          return b;
+        };
+        if (!onTable(newPuck)) {
+          newPuck.center.x = placeInInterval(
+            TABLE_DIMENSIONS.BORDER_SIZE + newPuck.rad,
+            TABLE_DIMENSIONS.LENGTH - newPuck.rad,
+            newPuck.center.x
+          );
+          newPuck.center.y = placeInInterval(
+            TABLE_DIMENSIONS.BORDER_SIZE + newPuck.rad,
+            TABLE_DIMENSIONS.WIDTH - newPuck.rad,
+            newPuck.center.y
+          );
+        }
         for (const conn of conns()) {
           conn.send({ type: "puck", puck: newPuck });
         }
@@ -412,10 +444,10 @@ function App() {
   };
   const ControlPanel = () => {
     const handleTextChange = (text: string, settingType: string) => {
-      if (parseInt(text)) {
+      if (Number(text)) {
         setGameSettings({
           ...gameSettings(),
-          [settingType]: parseInt(text) / 100,
+          [settingType]: Number(text) / 100,
         });
         if (settingType == "puckRadius") {
           setPuck({ ...puck(), rad: gameSettings().puckRadius });
@@ -458,7 +490,7 @@ function App() {
           onTextChange={(text: string) =>
             handleTextChange(text, "maxPuckSpeed")
           }
-          maxLength={1}
+          maxLength={4}
         />
       </div>
     );
@@ -555,6 +587,7 @@ function App() {
     onPeerChange: setPeer,
     onConnChange: (newConn: DataConnection) => {
       setConns([...conns(), newConn]);
+      newConn.send({ type: "gameSettings", gameSettings: gameSettings() });
     },
     onPlayerConnect: handlePlayerConnect,
     onPlayerTypeChange: setPlayerType,
