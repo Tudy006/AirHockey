@@ -66,15 +66,20 @@ const TABLE_DIMENSIONS = {
   GOAL_SIZE: 0.447646738,
   GOAL_HEIGHT: 0.276176631,
 };
+const defaultGameSettings = {
+  puckRadius: 0.03,
+  racketRadius: 0.06,
+  maxPuckSpeed: 0.04,
+};
 const Table: Vector[] = [
   { x: TABLE_DIMENSIONS.BORDER_SIZE, y: TABLE_DIMENSIONS.BORDER_SIZE },
   { x: TABLE_DIMENSIONS.BORDER_SIZE, y: TABLE_DIMENSIONS.GOAL_HEIGHT },
   {
-    x: TABLE_DIMENSIONS.BORDER_SIZE - 0.1,
+    x: TABLE_DIMENSIONS.BORDER_SIZE - 2 * defaultGameSettings.puckRadius,
     y: TABLE_DIMENSIONS.GOAL_HEIGHT,
   },
   {
-    x: TABLE_DIMENSIONS.BORDER_SIZE - 0.1,
+    x: TABLE_DIMENSIONS.BORDER_SIZE - 2 * defaultGameSettings.puckRadius,
     y: TABLE_DIMENSIONS.GOAL_HEIGHT + TABLE_DIMENSIONS.GOAL_SIZE,
   },
   {
@@ -94,11 +99,17 @@ const Table: Vector[] = [
     y: TABLE_DIMENSIONS.WIDTH - TABLE_DIMENSIONS.GOAL_HEIGHT,
   },
   {
-    x: TABLE_DIMENSIONS.LENGTH - TABLE_DIMENSIONS.BORDER_SIZE + 0.1,
+    x:
+      TABLE_DIMENSIONS.LENGTH -
+      TABLE_DIMENSIONS.BORDER_SIZE +
+      2 * defaultGameSettings.puckRadius,
     y: TABLE_DIMENSIONS.WIDTH - TABLE_DIMENSIONS.GOAL_HEIGHT,
   },
   {
-    x: TABLE_DIMENSIONS.LENGTH - TABLE_DIMENSIONS.BORDER_SIZE + 0.1,
+    x:
+      TABLE_DIMENSIONS.LENGTH -
+      TABLE_DIMENSIONS.BORDER_SIZE +
+      2 * defaultGameSettings.puckRadius,
     y: TABLE_DIMENSIONS.GOAL_HEIGHT,
   },
   {
@@ -111,11 +122,6 @@ const Table: Vector[] = [
   },
 ];
 
-const defaultGameSettings = {
-  puckRadius: 0.03,
-  racketRadius: 0.06,
-  maxPuckSpeed: 0.04,
-};
 const defaultPlayer = {
   id: "-1",
   team: "red",
@@ -510,6 +516,15 @@ function App() {
             height: `${tableWidthPx()}px`,
           }}
         >
+          <div
+            class="absolute z-30"
+            style={{
+              width: `${tableWidthPx() * TABLE_DIMENSIONS.LENGTH}px`,
+              height: `${tableWidthPx()}px`,
+            }}
+          >
+            <img src="images/separated parts/table_edges.png" alt="" />
+          </div>
           <img src="images/white_table_complete.png" />
         </div>
         <div class="absolute">

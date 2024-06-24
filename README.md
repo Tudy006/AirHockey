@@ -1,34 +1,81 @@
-## Usage
+# AirHockey
 
-Those templates dependencies are maintained via [pnpm](https://pnpm.io) via `pnpm up -Lri`.
+## Description
 
-This is the reason you see a `pnpm-lock.yaml`. That being said, any package manager will work. This file can be safely be removed once you clone a template.
+Welcome to AirHockey! This game allows multiple players to join and enjoy a thrilling game of air hockey together. Developed entirely by me, this game combines fun gameplay with a simple and intuitive user interface.
+
+## Table of Contents
+
+- [Installation](#installation)
+- [Usage](#usage)
+- [Features](#features)
+- [Contributing](#contributing)
+- [License](#license)
+- [Contact](#contact)
+- [Video Demonstration](#video-demonstration)
+
+## Installation
+
+Follow these steps to set up and install AirHockey:
 
 ```bash
-$ npm install # or pnpm install or yarn install
+# Clone the repository
+git clone https://github.com/Tudy006/AirHockey
+
+# Navigate to the project directory
+cd AirHockey
+
+# Install dependencies
+npm install
 ```
 
-### Learn more on the [Solid Website](https://solidjs.com) and come chat with us on our [Discord](https://discord.com/invite/solidjs)
+## Usage
 
-## Available Scripts
+To start playing the game, follow these instructions:
 
-In the project directory, you can run:
+1. **Enter your name** in the first text box.
+2. **Enter an ID** of your choice in the second text box (this acts as your game password) and press **Create Room**. This will set up a new game session and make you the host.
+3. If you want to join an existing game, simply **enter the game ID** in the second text box and press **Join Room**.
+4. **Control your racket** by moving your mouse.
+5. **Note**: As many players as you want can join a game for maximum fun.
 
-### `npm run dev` or `npm start`
+### Host Specific Instructions
 
-Runs the app in the development mode.<br>
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+- **Switch a player's team**: Click on the player's name.
+- **Change game settings**: Enter the desired values for puck radius, racket radius, and puck speed (default values are 3, 6, and 4 respectively).
 
-The page will reload if you make edits.<br>
+## Features
 
-### `npm run build`
+- Multiplayer functionality with unlimited players
+- Easy game setup with simple ID-based game creation and joining
+- Mouse-based racket control for intuitive gameplay
+- Host-exclusive game settings customization:
+  - Switch player teams
+  - Adjust puck radius
+  - Adjust racket radius
+  - Adjust puck speed
 
-Builds the app for production to the `dist` folder.<br>
-It correctly bundles Solid in production mode and optimizes the build for the best performance.
+## Contributing
 
-The build is minified and the filenames include the hashes.<br>
-Your app is ready to be deployed!
+Contributions are welcome! To contribute to AirHockey, follow these steps:
 
-## Deployment
+1. Fork the repository.
+2. Create a new branch (`git checkout -b feature-branch`).
+3. Make your changes.
+4. Commit your changes (`git commit -m 'Add new feature'`).
+5. Push to the branch (`git push origin feature-branch`).
+6. Open a pull request.
 
-You can deploy the `dist` folder to any static host provider (netlify, surge, now, etc.)
+## License
+
+This project is licensed under the MIT License.
+
+## Contact
+
+Tudor-Ștefan Mușat - [musattudor10@gmail.com](mailto:musattudor10@gmail.com)
+
+## Video Demonstration
+
+[![Watch the video](https://www.youtube.com/watch?v=6P9dLD3an7s)]
+
+Enjoy playing the Air Hockey Multiplayer Game!
