@@ -78,4 +78,4 @@ Tudor-Ștefan Mușat - [musattudor10@gmail.com](mailto:musattudor10@gmail.com)
 
 [![Watch the video](https://www.youtube.com/watch?v=6P9dLD3an7s)]
 
-Enjoy playing the Air Hockey Multiplayer Game!
+Enjoy playing AirHockey!
