@@ -2,11 +2,15 @@
 
 ## Description
 
-Welcome to AirHockey! This game allows multiple players to join and enjoy a thrilling game of air hockey together. Developed entirely by me, this game combines fun gameplay with a simple and intuitive user interface.
+Welcome to the Air Hockey Multiplayer Game! This game allows multiple players to join and enjoy a thrilling game of air hockey together. Developed entirely by me, this game combines fun gameplay with a simple and intuitive user interface. You can play the game online [here](https://air-hockey-y1ek.vercel.app/).
+
+## Video Demonstration
+
+[![Watch the video](https://img.youtube.com/vi/6P9dLD3an7s/maxresdefault.jpg)](https://www.youtube.com/watch?v=6P9dLD3an7s)
 
 ## Table of Contents
 
-- [Installation](#installation)
+- [Setup](#setup)
 - [Usage](#usage)
 - [Features](#features)
 - [Contributing](#contributing)
@@ -14,7 +18,7 @@ Welcome to AirHockey! This game allows multiple players to join and enjoy a thri
 - [Contact](#contact)
 - [Video Demonstration](#video-demonstration)
 
-## Installation
+## Setup
 
 Follow these steps to set up and install AirHockey:
 
@@ -27,6 +31,10 @@ cd AirHockey
 
 # Install dependencies
 npm install
+
+
+# Run the game
+npm run dev
 ```
 
 ## Usage
@@ -73,9 +81,5 @@ This project is licensed under the MIT License.
 ## Contact
 
 Tudor-Ștefan Mușat - [musattudor10@gmail.com](mailto:musattudor10@gmail.com)
-
-## Video Demonstration
-
-[![Watch the video](https://img.youtube.com/vi/6P9dLD3an7s/maxresdefault.jpg)](https://www.youtube.com/watch?v=6P9dLD3an7s)
 
 Enjoy playing AirHockey!
