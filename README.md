@@ -76,6 +76,6 @@ Tudor-Ștefan Mușat - [musattudor10@gmail.com](mailto:musattudor10@gmail.com)
 
 ## Video Demonstration
 
-[![Watch the video](https://www.youtube.com/watch?v=6P9dLD3an7s)]
+[![Watch the video](https://img.youtube.com/vi/6P9dLD3an7s/maxresdefault.jpg)](https://www.youtube.com/watch?v=6P9dLD3an7s)
 
 Enjoy playing AirHockey!
